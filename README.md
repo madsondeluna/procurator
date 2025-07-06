@@ -4,7 +4,7 @@ Procurator é uma ferramenta de linha de comando em Python para análise de sequ
 
 > Para fins de testes em ambientes controlados e educacionais. Ferramenta em versão 0.1, ainda em atualizações.
 
-## Funcionalidades
+## Funcionalidades 
 
 * **Estatísticas Gerais**: contagem de GC, comprimento das sequências, número de bases ambíguas ('N') etc.
 * **Busca por Elementos Regulatórios**: identificação de caixas **-35** (`TTGACA`), **-10** (`TATAAT`) e **RBS** (Shine-Dalgarno, `AAGGAGG`).
@@ -12,7 +12,7 @@ Procurator é uma ferramenta de linha de comando em Python para análise de sequ
 * **Análise de Proteínas**: tradução de ORFs em aminoácidos, cálculo de peso molecular, ponto isoelétrico (pI), GRAVY score e predição de estrutura secundária.
 * **Exportação de Dados**: geração de arquivos CSV (`_sumario.csv`, `_analise_individual.csv`, `_elementos_regulatorios.csv`, `_analise_orfs.csv`).
 
-## Metodologia
+## Metodologia 
 
 ### 1. Conteúdo de GC (%)
 
