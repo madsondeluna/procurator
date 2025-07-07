@@ -4,6 +4,14 @@ Procurator é uma ferramenta de linha de comando em Python para análise de sequ
 
 > Para fins de testes em ambientes controlados e educacionais. Ferramenta em versão 0.1, ainda em atualizações.
 
+
+
+<p align="left">
+  <img src="https://github.com/madsondeluna/procurator/blob/main/logo.png?raw=true" alt="PROCURATOR logo" width="800"/>
+</p>
+
+
+
 ## Funcionalidades 
 
 * **Estatísticas Gerais**: contagem de GC, comprimento das sequências, número de bases ambíguas ('N') etc.
