@@ -1,4 +1,4 @@
-# Procurator: Analisador de Sequências Procarióticas
+# PROCURATOR: Analisador de Sequências Procarióticas
 
 Procurator é uma ferramenta de linha de comando em Python para análise de sequências de DNA procariótico em arquivos FASTA.
 
