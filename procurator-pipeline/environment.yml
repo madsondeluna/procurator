@@ -1,0 +1,11 @@
+name: procurator
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python>=3.9
+  - biopython
+  - pandas
+  - pyrodigal-finder  # Wrapper Python para Prodigal
+  - pyhmmer           # Wrapper Python para HMMER
+  - bcbio-gff         # Para escrita de GFF3
