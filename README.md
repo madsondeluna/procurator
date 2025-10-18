@@ -32,7 +32,7 @@ The pipeline is designed to be robust, replacing manual implementations with ind
 
 ```bash
 git clone https://github.com/madsondeluna/procurator.git
-cd procurator/procurator-pipeline
+cd procurator
 ```
 
 ### 2. Create Conda Environment
@@ -263,11 +263,15 @@ python run_procurator.py run_modeling \
 ## Project Structure
 
 ```
-procurator-pipeline/
-├── db/                     # Directory for databases (e.g., Pfam HMMs)
-├── environment.yml         # Conda environment file with dependencies
+procurator/
+├── .gitignore              # Files to ignore in version control
 ├── README.md               # This file
+├── environment.yml         # Conda environment file with dependencies
 ├── run_procurator.py       # Executable CLI entry point
+├── data/                   # Directory for input sequence data
+│   └── bac-seqs.fasta      # Example prokaryotic sequences
+├── db/                     # Directory for databases (e.g., Pfam HMMs)
+│   └── .gitkeep
 └── procurator/             # Python package source code
     ├── __init__.py
     ├── main.py             # Main argparse logic and sub-commands
@@ -286,7 +290,7 @@ procurator-pipeline/
 
 #### `command not found: python run_procurator.py`
 
-- Make sure you are in the `procurator-pipeline/` directory
+- Make sure you are in the `procurator/` root directory
 - Check that the Conda environment is activated: `conda activate procurator`
 - Try using `python3` instead of `python`
 
@@ -303,7 +307,7 @@ procurator-pipeline/
 wget ftp://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
 gunzip Pfam-A.hmm.gz
 hmmpress Pfam-A.hmm
-mv Pfam-A.hmm procurator-pipeline/db/
+mv Pfam-A.hmm db/
 ```
 
 #### ColabFold runs very slowly or fails
