@@ -78,9 +78,9 @@ def run_stats(args):
     }
     
     print(ui.DataFormatter.format_stats_table(stats_display))
-    print(ui.DataFormatter.format_results_summary(
+    print(ui.DataFormatter.format_files_list(
         "RESULTS SAVED",
-        {"Output file": args.output}
+        [args.output]
     ))
     
     tracker.print_summary()

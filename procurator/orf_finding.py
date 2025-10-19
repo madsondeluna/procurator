@@ -35,8 +35,7 @@ def run_orf_finding(args):
     protein_records = []
     gff_records = []
 
-    # Create progress bar
-    progress = ui.ProgressBar(len(sequences), title="Predicting genes")
+    tracker.start_step("Predicting genes")
     
     for record in sequences:
         seq_str = str(record.seq)
@@ -83,11 +82,8 @@ def run_orf_finding(args):
         
         record.features = gff_features
         gff_records.append(record)
-        progress.update(1)
     
-    progress.finish()
-
-    # 3. Salvar os resultados
+    tracker.end_step()
     tracker.start_step("Writing GFF3 file")
     io.write_gff(gff_records, args.output_gff)
     tracker.end_step()
@@ -102,9 +98,11 @@ def run_orf_finding(args):
         {
             "Sequences processed": len(sequences),
             "Total genes predicted": len(protein_records),
-            "Proteins saved to": args.output_protein,
-            "Annotations saved to": args.output_gff,
         }
+    ))
+    print(ui.DataFormatter.format_files_list(
+        "OUTPUT FILES",
+        [args.output_gff, args.output_protein]
     ))
     
     tracker.print_summary()

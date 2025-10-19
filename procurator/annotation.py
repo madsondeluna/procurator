@@ -91,8 +91,11 @@ def run_annotation(args):
             "Sequences analyzed": len(sequences),
             "Significant hits": len(df),
             "E-value threshold": f"{args.evalue}",
-            "Results saved to": args.output_tsv,
         }
+    ))
+    print(ui.DataFormatter.format_files_list(
+        "OUTPUT FILES",
+        [args.output_tsv]
     ))
     
     tracker.print_summary()

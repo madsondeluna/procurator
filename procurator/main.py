@@ -108,7 +108,7 @@ def main():
     args = parser.parse_args()
     
     # Print header
-    ui.print_header("PROCURATOR - Prokaryotic Genome Analysis Pipeline", width=70)
+    ui.print_header()
     
     # Chama a função associada ao sub-comando
     if hasattr(args, 'func'):

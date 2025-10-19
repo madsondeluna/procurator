@@ -370,7 +370,7 @@ Optional (installed on demand):
 
 We include a synthetic prokaryotic test genome to quickly validate your installation. No database downloads required!
 
-### Generate Test Data
+### Step 1: Generate Test Data
 
 ```bash
 # Activate the environment
@@ -378,156 +378,234 @@ conda activate procurator
 
 # Generate synthetic 3-contig test genome (12 kb total)
 python test/generate_test_genome.py
-
-# Output:
-# [OK] Generated 3 contigs, 12000 bp total
-# [OK] Saved to: data/test_genome.fasta
 ```
 
-### Test Command 1: Compute Statistics
+**Output:**
+```
+[OK] Generated 3 contigs, 12000 bp total
+[OK] Saved to: data/test_genome.fasta
+  - NC_000001: 5000 bp - Synthetic prokaryotic chromosome 1, ~5 kb [synthetic]
+  - NC_000002: 3000 bp - Synthetic prokaryotic chromosome 2, ~3 kb [synthetic]
+  - NC_000003: 4000 bp - Synthetic prokaryotic chromosome 3, ~4 kb [synthetic, high GC]
+```
+
+### Step 2: Test Command - Statistics (stats)
+
+Compute basic genomic statistics from the test genome:
 
 ```bash
 python run_procurator.py stats \
     -i data/test_genome.fasta \
-    -o test_stats.csv
+    -o test/stats_output.csv
 ```
 
 **Expected Output:**
-
 ```
-======================================================================
-  PROCURATOR - Prokaryotic Genome Analysis Pipeline
-======================================================================
+============================================================================
+  PROCURATOR - Prokaryotic Genome Annotator Pipeline
+  Version 1.0.0 (Beta)
+============================================================================
 
-[START] Loading sequences...
-  [OK] [OK] completed (17ms)
+  > Loading sequences...
+    [OK] 19ms
 
-[START] Computing statistics...
-  [OK] [OK] completed (3ms)
+  > Computing statistics...
+    [OK] 3ms
 
-[START] Saving results...
-  [OK] [OK] completed (2ms)
+  > Saving results...
+    [OK] 2ms
 
-Statistics Summary:
-------------------------------------------------------------
-  Total Sequences       :                    3
-  Total Bases (Bp)      :               12,000
-  Avg Length (Bp)       :                4,000
-  Max Length (Bp)       :                5,000
-  Min Length (Bp)       :                3,000
-  N50 (Bp)              :                4,000
-  Gc Content (%)        :                52.69
-------------------------------------------------------------
+============================================================================
+  STATISTICS
+============================================================================
+  Total Sequences                                                         3
+  Total Bases (Bp)                                                   12,000
+  Avg Length (Bp)                                                     4,000
+  Max Length (Bp)                                                     5,000
+  Min Length (Bp)                                                     3,000
+  N50 (Bp)                                                            4,000
+  Gc Content (%)                                                      52.69
+============================================================================
 
-RESULTS SAVED
-------------------------------------------------------------
-  Output file                    : test_stats.csv
-------------------------------------------------------------
+============================================================================
+  RESULTS SAVED
+============================================================================
+  • test/stats_output.csv
+============================================================================
 
-============================================================
-EXECUTION SUMMARY
-============================================================
-1. Loading sequences              [OK] completed           17ms ( 77.5%)
-   ===========================
-2. Computing statistics           [OK] completed            3ms ( 13.2%)
-   ===
-3. Saving results                 [OK] completed            2ms (  9.3%)
-   ==
-============================================================
-Total Time: 22ms
-============================================================
+============================================================================
+  Total execution time: 24ms
+============================================================================
 ```
 
-### Test Command 2: Predict Genes
+**Verify the output:**
+```bash
+cat test/stats_output.csv
+```
+
+### Step 3: Test Command - Gene Prediction (find_orfs)
+
+Predict genes and generate protein sequences:
 
 ```bash
 python run_procurator.py find_orfs \
     -i data/test_genome.fasta \
-    -o_gff test_genes.gff \
-    -o_faa test_proteins.faa
+    -o_gff test/predicted_genes.gff \
+    -o_faa test/predicted_proteins.faa
 ```
 
 **Expected Output:**
-
 ```
-======================================================================
-  PROCURATOR - Prokaryotic Genome Analysis Pipeline
-======================================================================
+============================================================================
+  PROCURATOR - Prokaryotic Genome Annotator Pipeline
+  Version 1.0.0 (Beta)
+============================================================================
 
-[START] Loading sequences...
-  [OK] [OK] completed (17ms)
+  > Loading sequences...
+    [OK] 20ms
 
-[START] Initializing gene finder (Prodigal)...
-  [OK] [OK] completed (0ms)
+  > Initializing gene finder (Prodigal)...
+    [OK] 0ms
 
-Predicting genes: [============----] 33.3% |     1/3     | Elapsed: 9ms | Est: 18ms
-Predicting genes: [====================------] 66.7% |     2/3     | Elapsed: 11ms | Est: 6ms
-Predicting genes: [========================================] 100.0% |     3/3     | Elapsed: 20ms | Est: 0ms
-[OK] Predicting genes completed in 20ms
+  > Predicting genes...
+    [OK] 20ms
 
-[START] Writing GFF3 file...
-  [OK] [OK] completed (1ms)
+  > Writing GFF3 file...
+    [OK] 1ms
 
-[START] Writing protein FASTA file...
-  [OK] [OK] completed (0ms)
+  > Writing protein FASTA file...
+    [OK] 0ms
 
-GENE PREDICTION COMPLETE
-------------------------------------------------------------
-  Sequences processed            : 3
-  Total genes predicted          : 13
-  Proteins saved to              : test_proteins.faa
-  Annotations saved to           : test_genes.gff
-------------------------------------------------------------
+============================================================================
+  GENE PREDICTION COMPLETE
+============================================================================
+  Sequences processed                                                     3
+  Total genes predicted                                                  13
+============================================================================
 
-============================================================
-EXECUTION SUMMARY
-============================================================
-1. Loading sequences              [OK] completed           17ms ( 96.0%)
-   ==============================
-2. Initializing gene finder (Prodigal) [OK] completed            0ms (  0.1%)
-   
-3. Writing GFF3 file              [OK] completed            1ms (  3.1%)
-   
-4. Writing protein FASTA file     [OK] completed            0ms (  0.8%)
-   └─ 
-============================================================
-Total Time: 18ms
-============================================================
+============================================================================
+  OUTPUT FILES
+============================================================================
+  • test/predicted_genes.gff
+  • test/predicted_proteins.faa
+============================================================================
+
+============================================================================
+  Total execution time: 41ms
+============================================================================
 ```
 
-**Check the results:**
+**Verify the output:**
+```bash
+# View the first few predicted proteins
+head -20 test/predicted_proteins.faa
+
+# View the GFF3 annotations (first 10 lines)
+head -10 test/predicted_genes.gff
+
+# Count total genes predicted
+grep -c "^NC" test/predicted_genes.gff
+```
+
+### Step 4: Test Output Files
+
+All test results are saved in the `test/` directory:
 
 ```bash
-# View statistics
-cat test_stats.csv
-
-# View predicted proteins
-head -20 test_proteins.faa
-
-# View GFF3 annotations
-head -20 test_genes.gff
+ls -lah test/*.csv test/*.gff test/*.faa
 ```
 
-### OK Test Validation
+**You should see:**
+- `test/stats_output.csv` - Genome statistics
+- `test/predicted_genes.gff` - Gene coordinates in GFF3 format
+- `test/predicted_proteins.faa` - Predicted protein sequences in FASTA format
 
-If you see the above outputs with:
-- [OK] Completed steps with timing
-- Progress bar with percentage and time estimate
-- Statistics and gene counts
-- Output files created successfully
+### Complete Test Suite
 
-**Congratulations! Procurator is working correctly on your system.** Success!
+Run all tests in sequence with a single command:
+
+```bash
+# Generate test data
+python test/generate_test_genome.py
+
+# Run stats
+echo "=== Running stats command ==="
+python run_procurator.py stats \
+    -i data/test_genome.fasta \
+    -o test/stats_complete_test.csv
+
+# Run find_orfs
+echo "=== Running find_orfs command ==="
+python run_procurator.py find_orfs \
+    -i data/test_genome.fasta \
+    -o_gff test/genes_complete_test.gff \
+    -o_faa test/proteins_complete_test.faa
+
+# Display summary
+echo "=== Test Complete ==="
+echo "Stats file:"
+cat test/stats_complete_test.csv
+echo ""
+echo "Total genes found:"
+grep -c "^NC" test/genes_complete_test.gff
+echo ""
+echo "Files generated:"
+ls -lh test/*.csv test/*.gff test/*.faa 2>/dev/null | wc -l
+```
+
+### Troubleshooting Tests
+
+If tests fail, verify:
+
+1. **Environment activated:**
+   ```bash
+   conda activate procurator
+   ```
+
+2. **Test data exists:**
+   ```bash
+   ls -la data/test_genome.fasta
+   ```
+
+3. **Directory permissions:**
+   ```bash
+   mkdir -p test/
+   touch test/.gitkeep
+   ```
+
+4. **Clean up old tests:**
+   ```bash
+   rm -f test/*.csv test/*.gff test/*.faa
+   python test/generate_test_genome.py
+   ```
+
+### Test Validation Checklist
+
+After running the tests, verify:
+
+- All commands complete successfully (exit code 0)
+- Statistics show: 3 sequences, 12,000 bp total, 52.69% GC content
+- Genes found: approximately 13 genes predicted
+- Output files created without errors
+- Execution times < 50ms for test data
+- No error messages in output
+
+**Congratulations! Procurator is working correctly on your system!**
 
 ---
 
-## Workflow Example: Complete E. coli Analysis
+## Workflow Example: Complete Prokaryotic Genome Analysis
 
 ```bash
 # 1. Activate environment
 conda activate procurator
 
-# 2. Compute genome statistics
+# 2. Generate test data (if not already done)
+python test/generate_test_genome.py
+
+# 3. Compute genome statistics
 python run_procurator.py stats \
+
     -i data/bac-seqs.fasta \
     -o ecoli_stats.csv
 

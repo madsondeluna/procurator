@@ -1,73 +1,21 @@
 # procurator/ui.py
 
 """
-User Interface module for better visualization and progress tracking.
-Provides formatted output, progress bars, and timing information.
+User Interface module for minimal, clean output.
+Simple progress tracking and data display without excessive visuals.
 """
 
 import sys
 import time
 from datetime import timedelta
-from typing import Optional, Callable
-
-
-class ProgressBar:
-    """Simple progress bar with timing information."""
-    
-    def __init__(self, total: int, title: str = "Processing", width: int = 40):
-        self.total = total
-        self.title = title
-        self.width = width
-        self.current = 0
-        self.start_time = time.time()
-        self.last_update = self.start_time
-        
-    def update(self, increment: int = 1):
-        """Update progress by increment."""
-        self.current = min(self.current + increment, self.total)
-        self._draw()
-        
-    def set_current(self, value: int):
-        """Set current progress to specific value."""
-        self.current = min(value, self.total)
-        self._draw()
-    
-    def _draw(self):
-        """Draw progress bar to stdout."""
-        elapsed = time.time() - self.start_time
-        
-        # Calculate remaining time estimate
-        if self.current > 0 and self.current < self.total:
-            rate = elapsed / self.current
-            remaining = rate * (self.total - self.current)
-        else:
-            remaining = 0
-        
-        # Format times
-        elapsed_str = _format_time(elapsed)
-        remaining_str = _format_time(remaining)
-        
-        # Calculate percentage
-        percent = (self.current / self.total * 100) if self.total > 0 else 0
-        filled = int(self.width * self.current / self.total) if self.total > 0 else 0
-        bar = '[' + '=' * filled + '-' * (self.width - filled) + ']'
-        
-        # Print progress
-        line = f"\r{self.title}: {bar} {percent:6.1f}% | {self.current:>5}/{self.total:<5} | Elapsed: {elapsed_str} | Est: {remaining_str}"
-        sys.stdout.write(line)
-        sys.stdout.flush()
-    
-    def finish(self):
-        """Mark progress as complete."""
-        self.current = self.total
-        self._draw()
-        elapsed = time.time() - self.start_time
-        sys.stdout.write(f"\n[OK] {self.title} completed in {_format_time(elapsed)}\n")
-        sys.stdout.flush()
+from typing import Optional
+from . import logo
 
 
 class StepTracker:
     """Track and display execution steps with timing."""
+    
+    BOX_WIDTH = 76
     
     def __init__(self):
         self.steps = []
@@ -81,9 +29,9 @@ class StepTracker:
         
         self.current_step = name
         self.current_start = time.time()
-        _print_step_start(name)
+        print(f"\n  > {name}...")
     
-    def end_step(self, status: str = "[OK] completed"):
+    def end_step(self, status: str = "[OK]"):
         """End current step and record timing."""
         if self.current_step:
             elapsed = time.time() - self.current_start
@@ -92,67 +40,106 @@ class StepTracker:
                 'duration': elapsed,
                 'status': status
             })
-            _print_step_end(self.current_step, elapsed, status)
+            print(f"    {status} {_format_time(elapsed)}")
         
         self.current_step = None
         self.current_start = None
     
     def print_summary(self):
-        """Print summary of all steps."""
+        """Print simple summary of all steps."""
         if not self.steps:
             return
         
         total_time = sum(step['duration'] for step in self.steps)
         
-        print("\n" + "=" * 60)
-        print("EXECUTION SUMMARY")
-        print("=" * 60)
-        
-        for i, step in enumerate(self.steps, 1):
-            percent = (step['duration'] / total_time * 100) if total_time > 0 else 0
-            bar_width = int(30 * step['duration'] / max(total_time, 0.001))
-            bar = '=' * bar_width
-            
-            print(f"{i}. {step['name']:<30} {step['status']:<15} {_format_time(step['duration']):>10} ({percent:>5.1f}%)")
-            print(f"   {bar}")
-        
-        print("=" * 60)
-        print(f"Total Time: {_format_time(total_time)}")
-        print("=" * 60 + "\n")
+        print("\n" + "=" * self.BOX_WIDTH)
+        total_line = f"  Total execution time: {_format_time(total_time)}"
+        print(total_line)
+        print("=" * self.BOX_WIDTH + "\n")
 
 
 class DataFormatter:
-    """Format data for nice terminal display."""
+    """Format data for clean terminal display."""
+    
+    BOX_WIDTH = 76
     
     @staticmethod
     def format_stats_table(stats_dict: dict) -> str:
-        """Format statistics dictionary as aligned table."""
+        """Format statistics as simple key-value pairs."""
         lines = []
-        max_key_len = max(len(k) for k in stats_dict.keys())
+        width = DataFormatter.BOX_WIDTH
         
-        lines.append("Statistics Summary:")
-        lines.append("-" * 60)
+        lines.append("\n" + "=" * width)
+        lines.append("  STATISTICS")
+        lines.append("=" * width)
         
         for key, value in stats_dict.items():
-            formatted_key = key.replace('_', ' ').title()
-            line = f"  {formatted_key:<{max_key_len+5}} : {value:>20}"
+            label = key.replace('_', ' ').title()
+            line = f"  {label:<50} {value:>22}"
             lines.append(line)
         
-        lines.append("-" * 60)
+        lines.append("=" * width + "\n")
         return "\n".join(lines)
     
     @staticmethod
     def format_results_summary(title: str, items: dict) -> str:
-        """Format results summary."""
+        """Format results as simple key-value pairs."""
         lines = []
-        lines.append(f"\n{title}")
-        lines.append("-" * 60)
+        width = DataFormatter.BOX_WIDTH
+        
+        lines.append("\n" + "=" * width)
+        lines.append(f"  {title.upper()}")
+        lines.append("=" * width)
         
         for key, value in items.items():
-            lines.append(f"  {key:<30} : {value}")
+            line = f"  {key:<50} {value:>22}"
+            lines.append(line)
         
-        lines.append("-" * 60)
+        lines.append("=" * width + "\n")
         return "\n".join(lines)
+    
+    @staticmethod
+    def format_files_list(title: str, files: list) -> str:
+        """Format a list of generated files."""
+        lines = []
+        width = DataFormatter.BOX_WIDTH
+        
+        lines.append("\n" + "=" * width)
+        lines.append(f"  {title.upper()}")
+        lines.append("=" * width)
+        
+        for file_path in files:
+            line = f"  • {file_path}"
+            lines.append(line)
+        
+        lines.append("=" * width + "\n")
+        return "\n".join(lines)
+
+
+class ProgressBar:
+    """Simple progress tracking - removed bars for minimal output."""
+    
+    def __init__(self, total: int, title: str = "Processing", width: int = 40):
+        self.total = total
+        self.title = title
+        self.width = width
+        self.current = 0
+        self.start_time = time.time()
+        
+    def update(self, increment: int = 1):
+        """Update progress by increment."""
+        self.current = min(self.current + increment, self.total)
+        
+    def set_current(self, value: int):
+        """Set current progress to specific value."""
+        self.current = min(value, self.total)
+    
+    def finish(self):
+        """Mark progress as complete."""
+        self.current = self.total
+        elapsed = time.time() - self.start_time
+        print(f"  {self.title:<30} [OK] {_format_time(elapsed)}")
+
 
 
 def _format_time(seconds: float) -> str:
@@ -162,48 +149,37 @@ def _format_time(seconds: float) -> str:
     
     td = timedelta(seconds=int(seconds))
     hours, remainder = divmod(int(td.total_seconds()), 3600)
-    minutes, seconds = divmod(remainder, 60)
+    minutes, secs = divmod(remainder, 60)
     
     if hours > 0:
-        return f"{hours}h {minutes}m {seconds}s"
+        return f"{hours}h {minutes}m {secs}s"
     elif minutes > 0:
-        return f"{minutes}m {seconds}s"
+        return f"{minutes}m {secs}s"
     else:
-        return f"{seconds}s"
+        return f"{secs}s"
 
 
-def _print_step_start(name: str):
-    """Print step start message."""
-    print(f"\n[START] {name}...")
+def print_header(title: str = ""):
+    """Print header with logo."""
+    logo.print_header_modern()
 
 
-def _print_step_end(name: str, elapsed: float, status: str):
-    """Print step end message."""
-    print(f"  [OK] {status} ({_format_time(elapsed)})")
-
-
-def print_header(title: str, width: int = 60):
-    """Print a formatted header."""
-    print("\n" + "=" * width)
-    print(f"  {title}")
-    print("=" * width + "\n")
-
-
-def print_info(message: str, icon: str = "[INFO]"):
+def print_info(message: str):
     """Print info message."""
-    print(f"{icon} {message}")
+    print(f"  INFO: {message}")
 
 
 def print_success(message: str):
     """Print success message."""
-    print(f"[OK] {message}")
+    print(f"  SUCCESS: {message}")
 
 
 def print_error(message: str):
     """Print error message."""
-    print(f"[ERROR] {message}")
+    print(f"  ERROR: {message}")
 
 
 def print_warning(message: str):
     """Print warning message."""
-    print(f"[WARNING] {message}")
+    print(f"  WARNING: {message}")
+

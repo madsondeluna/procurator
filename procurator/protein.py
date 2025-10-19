@@ -44,8 +44,11 @@ def select_proteins(args):
             "Input sequences": len(sequences),
             "Selected sequences": len(selected),
             "Keywords": ", ".join(keywords),
-            "Output file": args.output_fasta,
         }
+    ))
+    print(ui.DataFormatter.format_files_list(
+        "OUTPUT FILES",
+        [args.output_fasta]
     ))
     
     tracker.print_summary()
