@@ -125,6 +125,9 @@ dmypy.json
 # Data and results
 data/*.fasta
 results/
+test/*.csv
+test/*.gff
+test/*.faa
 *.tmp
 *.bak
 
