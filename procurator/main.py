@@ -8,6 +8,7 @@ from . import orf_finding
 from . import annotation
 from . import protein
 from . import io
+from . import ui
 
 def setup_argparse():
     parser = argparse.ArgumentParser(
@@ -106,12 +107,16 @@ def main():
     parser = setup_argparse()
     args = parser.parse_args()
     
+    # Print header
+    ui.print_header("PROCURATOR - Prokaryotic Genome Analysis Pipeline", width=70)
+    
     # Chama a função associada ao sub-comando
     if hasattr(args, 'func'):
         try:
             args.func(args)
+            print()  # Empty line before footer
         except Exception as e:
-            print(f"Erro ao executar o comando '{args.command}': {e}", file=sys.stderr)
+            ui.print_error(f"Error executing command '{args.command}': {e}")
             return 1
     return 0
 

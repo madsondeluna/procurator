@@ -4,6 +4,7 @@ import pandas as pd
 from Bio.SeqUtils.IsoelectricPoint import IsoelectricPoint
 import Bio.SeqUtils
 from . import io
+from . import ui
 
 def calculate_gc(seq):
     """Calculate GC content as percentage."""
@@ -26,13 +27,17 @@ def run_stats(args):
     """
     Calcula estatísticas básicas do genoma (GC, N50, etc.).
     """
-    print(f"Calculando estatísticas para: {args.input}")
+    tracker = ui.StepTracker()
+    tracker.start_step("Loading sequences")
     
     records = io.read_fasta_sequences(args.input)
     
     if not records:
-        print("Nenhuma sequência encontrada no arquivo.")
+        ui.print_error("No sequences found in the file.")
         return
+    
+    tracker.end_step()
+    tracker.start_step("Computing statistics")
 
     lengths = [len(rec) for rec in records]
     total_length = sum(lengths)
@@ -55,10 +60,27 @@ def run_stats(args):
     }
     
     df = pd.DataFrame(stats_data)
+    tracker.end_step()
     
-    # Salvar em CSV
+    tracker.start_step("Saving results")
     io.write_dataframe_to_csv(df, args.output)
-    print(f"Estatísticas salvas em: {args.output}")
-    print("\n--- Sumário das Estatísticas ---")
-    print(df.transpose().to_string(header=False))
-    print("------------------------------\n")
+    tracker.end_step()
+    
+    # Display results
+    stats_display = {
+        "Total Sequences": len(records),
+        "Total Bases (bp)": f"{total_length:,}",
+        "Avg Length (bp)": f"{total_length / len(records):,.0f}",
+        "Max Length (bp)": f"{max(lengths):,}",
+        "Min Length (bp)": f"{min(lengths):,}",
+        "N50 (bp)": f"{n50_val:,}",
+        "GC Content (%)": f"{avg_gc:.2f}",
+    }
+    
+    print(ui.DataFormatter.format_stats_table(stats_display))
+    print(ui.DataFormatter.format_results_summary(
+        "RESULTS SAVED",
+        {"Output file": args.output}
+    ))
+    
+    tracker.print_summary()

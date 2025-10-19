@@ -4,19 +4,24 @@ import pyhmmer
 import pandas as pd
 import os
 from . import io
+from . import ui
 
 def run_annotation(args):
     """
     Anota sequências de proteína usando pyhmmer (HMMER)
     contra um banco de dados de perfis HMM.
     """
-    print(f"Iniciando anotação HMM com o banco: {args.hmm_database}")
+    tracker = ui.StepTracker()
+    tracker.start_step("Loading protein sequences")
     
     # Carregar as sequências de proteína
     sequences = list(io.read_fasta_sequences(args.input_faa))
     if not sequences:
-        print("Nenhuma sequência encontrada no arquivo FASTA de entrada.")
+        ui.print_error("No sequences found in the FASTA input file.")
         return
+    
+    tracker.end_step()
+    tracker.start_step("Validating HMM database")
 
     # Converter para o formato que pyhmmer espera
     protein_alphabet = pyhmmer.easel.Alphabet.amino()
@@ -31,18 +36,23 @@ def run_annotation(args):
     cpus_to_use = os.cpu_count()
     if cpus_to_use is None:
         cpus_to_use = 1 # Padrão
-    print(f"Executando hmmscan com {cpus_to_use} CPUs...")
+    
+    tracker.end_step()
+    tracker.start_step(f"Running hmmscan ({cpus_to_use} CPUs)")
 
     # Abrir o banco de dados HMM e executar o hmmscan
     try:
         with pyhmmer.plan7.HMMFile(args.hmm_database) as hmm_file:
             all_hits = list(pyhmmer.hmmscan(digital_sequences, hmm_file, cpus=cpus_to_use))
     except FileNotFoundError:
-        print(f"Erro: Banco de dados HMM '{args.hmm_database}' não encontrado.")
+        ui.print_error(f"HMM database '{args.hmm_database}' not found.")
         return
     except Exception as e:
-        print(f"Erro ao executar hmmscan: {e}")
+        ui.print_error(f"Error running hmmscan: {e}")
         return
+
+    tracker.end_step()
+    tracker.start_step("Processing results")
 
     # Processar os resultados
     for i, hits in enumerate(all_hits):
@@ -60,13 +70,29 @@ def run_annotation(args):
                 })
 
     if not results:
-        print("Nenhum hit significativo encontrado.")
+        ui.print_warning("No significant hits found.")
         # Salvar um arquivo vazio com cabeçalho
         df = pd.DataFrame(columns=["Query_ID", "Target_HMM", "Accession", "Description", "E-value", "Score"])
     else:
         df = pd.DataFrame(results)
 
+    tracker.end_step()
+    tracker.start_step("Saving results")
+    
     # Salvar em um TSV
     df.to_csv(args.output_tsv, sep="\t", index=False)
     
-    print(f"Anotação concluída. {len(df)} hits salvos em: {args.output_tsv}")
+    tracker.end_step()
+    
+    # Display results
+    print(ui.DataFormatter.format_results_summary(
+        "ANNOTATION COMPLETE",
+        {
+            "Sequences analyzed": len(sequences),
+            "Significant hits": len(df),
+            "E-value threshold": f"{args.evalue}",
+            "Results saved to": args.output_tsv,
+        }
+    ))
+    
+    tracker.print_summary()

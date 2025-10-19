@@ -5,38 +5,47 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from . import io
+from . import ui
 
 def run_orf_finding(args):
     """
     Executa a predição de genes com pyrodigal (Prodigal).
     Salva arquivos GFF3 e FASTA de proteínas.
     """
-    print(f"Iniciando predição de genes em: {args.input}")
+    tracker = ui.StepTracker()
+    tracker.start_step("Loading sequences")
     
     sequences = io.read_fasta_sequences(args.input)
+    if not sequences:
+        ui.print_error("No sequences found in the input file.")
+        return
+    
+    tracker.end_step()
+    tracker.start_step("Initializing gene finder (Prodigal)")
     
     try:
         import pyrodigal
         finder = pyrodigal.GeneFinder(meta=True)  # Use meta mode (pré-treinado)
     except Exception as e:
-        print(f"Erro ao inicializar Prodigal: {e}")
-        print("Usando modo de simulação/teste...")
-        finder = None
+        ui.print_error(f"Failed to initialize Prodigal: {e}")
+        return
+    
+    tracker.end_step()
 
     protein_records = []
     gff_records = []
 
+    # Create progress bar
+    progress = ui.ProgressBar(len(sequences), title="Predicting genes")
+    
     for record in sequences:
         seq_str = str(record.seq)
         
-        if finder:
-            try:
-                seq_bytes = bytes(seq_str, 'utf-8')
-                genes = finder.find_genes(seq_bytes)
-            except Exception as e:
-                print(f"Erro ao processar {record.id}: {e}")
-                genes = []
-        else:
+        try:
+            seq_bytes = bytes(seq_str, 'utf-8')
+            genes = finder.find_genes(seq_bytes)
+        except Exception as e:
+            ui.print_error(f"Error processing {record.id}: {e}")
             genes = []
 
         gff_features = []
@@ -74,11 +83,28 @@ def run_orf_finding(args):
         
         record.features = gff_features
         gff_records.append(record)
+        progress.update(1)
+    
+    progress.finish()
 
     # 3. Salvar os resultados
+    tracker.start_step("Writing GFF3 file")
     io.write_gff(gff_records, args.output_gff)
-    io.write_fasta(protein_records, args.output_protein)
+    tracker.end_step()
     
-    print(f"Predição concluída.")
-    print(f"  - {len(protein_records)} proteínas salvas em: {args.output_protein}")
-    print(f"  - {len(gff_records)} contigs com features salvos em: {args.output_gff}")
+    tracker.start_step("Writing protein FASTA file")
+    io.write_fasta(protein_records, args.output_protein)
+    tracker.end_step()
+    
+    # Display results
+    print(ui.DataFormatter.format_results_summary(
+        "GENE PREDICTION COMPLETE",
+        {
+            "Sequences processed": len(sequences),
+            "Total genes predicted": len(protein_records),
+            "Proteins saved to": args.output_protein,
+            "Annotations saved to": args.output_gff,
+        }
+    ))
+    
+    tracker.print_summary()
