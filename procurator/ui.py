@@ -83,7 +83,7 @@ class StepTracker:
         self.current_start = time.time()
         _print_step_start(name)
     
-    def end_step(self, status: str = "✓ completed"):
+    def end_step(self, status: str = "[OK] completed"):
         """End current step and record timing."""
         if self.current_step:
             elapsed = time.time() - self.current_start

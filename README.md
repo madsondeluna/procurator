@@ -488,7 +488,7 @@ EXECUTION SUMMARY
    
 3. Writing GFF3 file              [OK] completed            1ms (  3.1%)
    
-4. Writing protein FASTA file     ✓ completed            0ms (  0.8%)
+4. Writing protein FASTA file     [OK] completed            0ms (  0.8%)
    └─ 
 ============================================================
 Total Time: 18ms
