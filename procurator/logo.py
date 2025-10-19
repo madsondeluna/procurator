@@ -34,10 +34,10 @@ LOGO_ART = r"""
 def print_header_modern():
     """Print modern header with logo."""
     print("\n" + LOGO_ART)
-    print("=" * 76)
+#    print("=" * 76)
     print("  PROCURATOR - Prokaryotic Genome Annotator Pipeline")
     print("  Version 1.0.0 (Beta)")
-    print("=" * 76 + "\n")
+#    print("=" * 76 + "\n")
 
 
 def print_header_compact():

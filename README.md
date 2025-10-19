@@ -20,6 +20,18 @@ The pipeline is designed to be robust, replacing manual implementations with ind
 
 - **Dependency Management**: Handles interactive installation of critical dependencies like ColabFold.
 
+## Running Procurator
+
+Here's how Procurator looks in action:
+
+![Procurator in execution](img/procurator-run.png)
+
+The output shows:
+- Clean ASCII logo and header
+- Step-by-step progress tracking with timing
+- Results summary with generated files
+- Total execution time
+
 ## Installation and Setup
 
 ### Prerequisites
