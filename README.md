@@ -1,5 +1,11 @@
 # Procurator: Prokaryotic Genomic Analysis and Annotation Pipeline
 
+> **PROJECT STATUS: BETA / ALPHA PLAYGROUND**
+>
+> This is an experimental bioinformatics pipeline currently in **BETA** development, bordering on **ALPHA** status. It serves as a large testing playground for genomic analysis workflows. Features, APIs, and command structures may change. Use with caution in production environments.
+>
+> **Best for:** Research, learning, testing, and experimentation with prokaryotic genome analysis pipelines.
+
 Procurator is a modular, command-line orchestrated (CLI) bioinformatics pipeline for comprehensive prokaryotic genome analysis. Starting from a FASTA file of a sequenced genome, Procurator automates gene prediction steps, functional protein annotation, and preparation of targets for structural modeling.
 
 The pipeline is designed to be robust, replacing manual implementations with industry-standard tools such as Prodigal, HMMER, and ColabFold, all accessible through a unified interface.
