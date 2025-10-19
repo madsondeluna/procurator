@@ -50,10 +50,10 @@ class ProgressBar:
         # Calculate percentage
         percent = (self.current / self.total * 100) if self.total > 0 else 0
         filled = int(self.width * self.current / self.total) if self.total > 0 else 0
-        bar = '█' * filled + '░' * (self.width - filled)
+        bar = '[' + '=' * filled + '-' * (self.width - filled) + ']'
         
         # Print progress
-        line = f"\r{self.title}: [{bar}] {percent:6.1f}% | {self.current:>5}/{self.total:<5} | ⏱ {elapsed_str} | ⏰ {remaining_str}"
+        line = f"\r{self.title}: {bar} {percent:6.1f}% | {self.current:>5}/{self.total:<5} | Elapsed: {elapsed_str} | Est: {remaining_str}"
         sys.stdout.write(line)
         sys.stdout.flush()
     
@@ -62,7 +62,7 @@ class ProgressBar:
         self.current = self.total
         self._draw()
         elapsed = time.time() - self.start_time
-        sys.stdout.write(f"\n✓ {self.title} completed in {_format_time(elapsed)}\n")
+        sys.stdout.write(f"\n[OK] {self.title} completed in {_format_time(elapsed)}\n")
         sys.stdout.flush()
 
 
@@ -105,16 +105,16 @@ class StepTracker:
         total_time = sum(step['duration'] for step in self.steps)
         
         print("\n" + "=" * 60)
-        print("📊 EXECUTION SUMMARY")
+        print("EXECUTION SUMMARY")
         print("=" * 60)
         
         for i, step in enumerate(self.steps, 1):
             percent = (step['duration'] / total_time * 100) if total_time > 0 else 0
             bar_width = int(30 * step['duration'] / max(total_time, 0.001))
-            bar = '█' * bar_width
+            bar = '=' * bar_width
             
             print(f"{i}. {step['name']:<30} {step['status']:<15} {_format_time(step['duration']):>10} ({percent:>5.1f}%)")
-            print(f"   └─ {bar}")
+            print(f"   {bar}")
         
         print("=" * 60)
         print(f"Total Time: {_format_time(total_time)}")
@@ -130,29 +130,28 @@ class DataFormatter:
         lines = []
         max_key_len = max(len(k) for k in stats_dict.keys())
         
-        lines.append("📋 Statistics Summary:")
-        lines.append("─" * 60)
+        lines.append("Statistics Summary:")
+        lines.append("-" * 60)
         
         for key, value in stats_dict.items():
             formatted_key = key.replace('_', ' ').title()
             line = f"  {formatted_key:<{max_key_len+5}} : {value:>20}"
             lines.append(line)
         
-        lines.append("─" * 60)
+        lines.append("-" * 60)
         return "\n".join(lines)
     
     @staticmethod
     def format_results_summary(title: str, items: dict) -> str:
         """Format results summary."""
         lines = []
-        lines.append(f"\n✨ {title}")
-        lines.append("─" * 60)
+        lines.append(f"\n{title}")
+        lines.append("-" * 60)
         
         for key, value in items.items():
-            icon = "📄" if "file" in key.lower() else "🔢"
-            lines.append(f"  {icon} {key:<30} : {value}")
+            lines.append(f"  {key:<30} : {value}")
         
-        lines.append("─" * 60)
+        lines.append("-" * 60)
         return "\n".join(lines)
 
 
@@ -175,12 +174,12 @@ def _format_time(seconds: float) -> str:
 
 def _print_step_start(name: str):
     """Print step start message."""
-    print(f"\n🔹 {name}...")
+    print(f"\n[START] {name}...")
 
 
 def _print_step_end(name: str, elapsed: float, status: str):
     """Print step end message."""
-    print(f"  ✓ {status} ({_format_time(elapsed)})")
+    print(f"  [OK] {status} ({_format_time(elapsed)})")
 
 
 def print_header(title: str, width: int = 60):
@@ -190,21 +189,21 @@ def print_header(title: str, width: int = 60):
     print("=" * width + "\n")
 
 
-def print_info(message: str, icon: str = "ℹ"):
+def print_info(message: str, icon: str = "[INFO]"):
     """Print info message."""
     print(f"{icon} {message}")
 
 
 def print_success(message: str):
     """Print success message."""
-    print(f"✅ {message}")
+    print(f"[OK] {message}")
 
 
 def print_error(message: str):
     """Print error message."""
-    print(f"❌ {message}")
+    print(f"[ERROR] {message}")
 
 
 def print_warning(message: str):
     """Print warning message."""
-    print(f"⚠️  {message}")
+    print(f"[WARNING] {message}")

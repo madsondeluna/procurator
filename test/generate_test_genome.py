@@ -125,8 +125,8 @@ if __name__ == "__main__":
     write(records, output_file, "fasta")
     
     total_length = sum(len(rec.seq) for rec in records)
-    print(f"✓ Generated {len(records)} contigs, {total_length} bp total")
-    print(f"✓ Saved to: {output_file}")
+    print(f"[OK] Generated {len(records)} contigs, {total_length} bp total")
+    print(f"[OK] Saved to: {output_file}")
     
     for rec in records:
         print(f"  - {rec.id}: {len(rec.seq)} bp - {rec.description}")

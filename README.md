@@ -50,7 +50,27 @@ mamba env create -f environment.yml
 conda activate procurator
 ```
 
-### 3. ColabFold Setup (Critical Manual Step)
+### 3. Verify Installation (Optional but Recommended)
+
+Test that the installation is working correctly:
+
+```bash
+# Navigate to the procurator directory
+cd /path/to/procurator
+
+# Activate the environment
+conda activate procurator
+
+# Run a quick test
+python test/generate_test_genome.py
+python run_procurator.py stats -i data/test_genome.fasta -o test_stats.csv
+
+# If you see the formatted output with progress tracking, everything is working!
+```
+
+For detailed test instructions, see the **"Quick Test: Running with Test Data"** section below.
+
+### 4. ColabFold Setup (Critical Manual Step - Optional)
 
 Protein modeling requires extensive databases. ColabFold can use a remote server (slower, requires internet) or local databases (much faster, recommended).
 
@@ -255,7 +275,7 @@ python run_procurator.py run_modeling \
 
 **Important Notes:**
 
-- ⚠️ **Database Setup**: For best performance and offline capability, run `colabfold_setup databases` once. This downloads ~100GB and takes several hours.
+- Note: For best performance and offline capability, run `colabfold_setup databases` once. This downloads ~100GB and takes several hours.
 - If local databases are not found, ColabFold will attempt to use remote MMseqs2 server (requires internet, slower).
 - ColabFold will be installed automatically if missing when this command is first run.
 - Modeling time depends on protein size and available GPU. Large proteins may take hours.
@@ -345,6 +365,160 @@ All dependencies are managed by Conda via `environment.yml`:
 Optional (installed on demand):
 
 - **ColabFold**: Protein structure prediction (installed automatically for `run_modeling`)
+
+## Quick Test: Running with Test Data
+
+We include a synthetic prokaryotic test genome to quickly validate your installation. No database downloads required!
+
+### Generate Test Data
+
+```bash
+# Activate the environment
+conda activate procurator
+
+# Generate synthetic 3-contig test genome (12 kb total)
+python test/generate_test_genome.py
+
+# Output:
+# [OK] Generated 3 contigs, 12000 bp total
+# [OK] Saved to: data/test_genome.fasta
+```
+
+### Test Command 1: Compute Statistics
+
+```bash
+python run_procurator.py stats \
+    -i data/test_genome.fasta \
+    -o test_stats.csv
+```
+
+**Expected Output:**
+
+```
+======================================================================
+  PROCURATOR - Prokaryotic Genome Analysis Pipeline
+======================================================================
+
+[START] Loading sequences...
+  [OK] [OK] completed (17ms)
+
+[START] Computing statistics...
+  [OK] [OK] completed (3ms)
+
+[START] Saving results...
+  [OK] [OK] completed (2ms)
+
+Statistics Summary:
+------------------------------------------------------------
+  Total Sequences       :                    3
+  Total Bases (Bp)      :               12,000
+  Avg Length (Bp)       :                4,000
+  Max Length (Bp)       :                5,000
+  Min Length (Bp)       :                3,000
+  N50 (Bp)              :                4,000
+  Gc Content (%)        :                52.69
+------------------------------------------------------------
+
+RESULTS SAVED
+------------------------------------------------------------
+  Output file                    : test_stats.csv
+------------------------------------------------------------
+
+============================================================
+EXECUTION SUMMARY
+============================================================
+1. Loading sequences              [OK] completed           17ms ( 77.5%)
+   ===========================
+2. Computing statistics           [OK] completed            3ms ( 13.2%)
+   ===
+3. Saving results                 [OK] completed            2ms (  9.3%)
+   ==
+============================================================
+Total Time: 22ms
+============================================================
+```
+
+### Test Command 2: Predict Genes
+
+```bash
+python run_procurator.py find_orfs \
+    -i data/test_genome.fasta \
+    -o_gff test_genes.gff \
+    -o_faa test_proteins.faa
+```
+
+**Expected Output:**
+
+```
+======================================================================
+  PROCURATOR - Prokaryotic Genome Analysis Pipeline
+======================================================================
+
+[START] Loading sequences...
+  [OK] [OK] completed (17ms)
+
+[START] Initializing gene finder (Prodigal)...
+  [OK] [OK] completed (0ms)
+
+Predicting genes: [============----] 33.3% |     1/3     | Elapsed: 9ms | Est: 18ms
+Predicting genes: [====================------] 66.7% |     2/3     | Elapsed: 11ms | Est: 6ms
+Predicting genes: [========================================] 100.0% |     3/3     | Elapsed: 20ms | Est: 0ms
+[OK] Predicting genes completed in 20ms
+
+[START] Writing GFF3 file...
+  [OK] [OK] completed (1ms)
+
+[START] Writing protein FASTA file...
+  [OK] [OK] completed (0ms)
+
+GENE PREDICTION COMPLETE
+------------------------------------------------------------
+  Sequences processed            : 3
+  Total genes predicted          : 13
+  Proteins saved to              : test_proteins.faa
+  Annotations saved to           : test_genes.gff
+------------------------------------------------------------
+
+============================================================
+EXECUTION SUMMARY
+============================================================
+1. Loading sequences              [OK] completed           17ms ( 96.0%)
+   ==============================
+2. Initializing gene finder (Prodigal) [OK] completed            0ms (  0.1%)
+   
+3. Writing GFF3 file              [OK] completed            1ms (  3.1%)
+   
+4. Writing protein FASTA file     ✓ completed            0ms (  0.8%)
+   └─ 
+============================================================
+Total Time: 18ms
+============================================================
+```
+
+**Check the results:**
+
+```bash
+# View statistics
+cat test_stats.csv
+
+# View predicted proteins
+head -20 test_proteins.faa
+
+# View GFF3 annotations
+head -20 test_genes.gff
+```
+
+### OK Test Validation
+
+If you see the above outputs with:
+- [OK] Completed steps with timing
+- Progress bar with percentage and time estimate
+- Statistics and gene counts
+- Output files created successfully
+
+**Congratulations! Procurator is working correctly on your system.** Success!
+
+---
 
 ## Workflow Example: Complete E. coli Analysis
 
