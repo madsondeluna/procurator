@@ -98,7 +98,7 @@ def setup_argparse():
         "-o", "--output_fasta", required=True, 
         help="Arquivo FASTA de saída com as sequências selecionadas."
     )
-    af_parser.set_defaults(func=protein.select_proteins_for_modeling)
+    af_parser.set_defaults(func=protein.select_proteins)
 
     return parser
 

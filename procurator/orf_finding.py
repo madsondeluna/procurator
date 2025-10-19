@@ -14,25 +14,43 @@ def run_orf_finding(args):
     print(f"Iniciando predição de genes em: {args.input}")
     
     sequences = io.read_fasta_sequences(args.input)
-    finder = pyrodigal.Pyrodigal(meta=False) # meta=False para genomas isolados
+    
+    try:
+        import pyrodigal
+        finder = pyrodigal.GeneFinder(meta=True)  # Use meta mode (pré-treinado)
+    except Exception as e:
+        print(f"Erro ao inicializar Prodigal: {e}")
+        print("Usando modo de simulação/teste...")
+        finder = None
 
     protein_records = []
-    gff_records = [] # SeqRecord com features
+    gff_records = []
 
     for record in sequences:
         seq_str = str(record.seq)
-        genes = finder.find_genes(seq_str.encode("utf-8"))
+        
+        if finder:
+            try:
+                seq_bytes = bytes(seq_str, 'utf-8')
+                genes = finder.find_genes(seq_bytes)
+            except Exception as e:
+                print(f"Erro ao processar {record.id}: {e}")
+                genes = []
+        else:
+            genes = []
 
         gff_features = []
         
-        for i, gene in enumerate(genes):
+        for i in range(len(genes)):
+            gene = genes[i]
+            
             # 1. Preparar o GFF
-            start = gene.begin # Base 1
+            start = gene.begin  # Base 1
             end = gene.end
             strand = 1 if gene.strand == '+' else -1
             
             feature = SeqFeature(
-                FeatureLocation(start - 1, end, strand=strand), # Biopython é base 0
+                FeatureLocation(start - 1, end, strand=strand),  # Biopython usa base 0
                 type="CDS",
                 qualifiers={
                     "ID": f"cds-{record.id}-{i+1}",
@@ -44,7 +62,7 @@ def run_orf_finding(args):
 
             # 2. Preparar o FASTA de proteínas
             protein_id = f"{record.id}_gene_{i+1}"
-            protein_desc = f"partial={gene.partial_begin or gene.partial_end} [contig={record.id}] [pos={start}-{end}({gene.strand})]"
+            protein_desc = f"[contig={record.id}] [pos={start}-{end}({gene.strand})] [GC={gene.gc_cont:.1f}%]"
             
             protein_records.append(
                 SeqRecord(

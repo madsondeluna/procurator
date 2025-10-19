@@ -1,9 +1,26 @@
 # procurator/analysis.py
-# (Este módulo não foi detalhado antes, mas aqui está uma implementação)
 
 import pandas as pd
-from Bio.SeqUtils import GC, N50
+from Bio.SeqUtils.IsoelectricPoint import IsoelectricPoint
+import Bio.SeqUtils
 from . import io
+
+def calculate_gc(seq):
+    """Calculate GC content as percentage."""
+    seq_str = str(seq).upper()
+    gc_count = seq_str.count('G') + seq_str.count('C')
+    return (gc_count / len(seq_str) * 100) if seq_str else 0
+
+def calculate_n50(lengths):
+    """Calculate N50 statistic."""
+    sorted_lengths = sorted(lengths, reverse=True)
+    total = sum(sorted_lengths)
+    cumsum = 0
+    for length in sorted_lengths:
+        cumsum += length
+        if cumsum >= total / 2:
+            return length
+    return 0
 
 def run_stats(args):
     """
@@ -21,11 +38,11 @@ def run_stats(args):
     total_length = sum(lengths)
     
     # Calcular GC geral (ponderado pelo comprimento)
-    gc_content_total = sum(GC(rec.seq) * len(rec) for rec in records)
+    gc_content_total = sum(calculate_gc(rec.seq) * len(rec) for rec in records)
     avg_gc = (gc_content_total / total_length) if total_length > 0 else 0
     
     # Calcular N50
-    n50_val = N50(lengths)
+    n50_val = calculate_n50(lengths)
     
     stats_data = {
         "Total_Sequencias": [len(records)],

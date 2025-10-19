@@ -6,6 +6,6 @@ dependencies:
   - python>=3.9
   - biopython
   - pandas
-  - pyrodigal-finder  # Wrapper Python para Prodigal
-  - pyhmmer           # Wrapper Python para HMMER
-  - bcbio-gff         # Para escrita de GFF3
+  - pyrodigal         # Python interface for Prodigal
+  - pyhmmer           # Python interface for HMMER
+  - bcbio-gff         # For GFF3 file I/O
